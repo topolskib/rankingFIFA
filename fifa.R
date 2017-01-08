@@ -43,7 +43,9 @@ mecze_final = mecze %>%
                               ifelse(ME, "Mistrzostwa", 
                                      ifelse(eME, "Eliminacje", "Towarzyski")))),
          Rezultat = ifelse(Wygrana == 1, "Wygrana",
-                           ifelse(Wygrana == 0, "Remis","Przegrana")))
+                           ifelse(Wygrana == 0, "Remis","Przegrana"))) %>%
+  rename(Pozycja = pozycja, Data_graph = Data) %>%
+  mutate(Data = as.Date(Data_graph))
 
 plot(dane$date_formated, dane$pozycja)
 
@@ -58,28 +60,32 @@ plot(dane$date_formated, dane$pozycja)
 # p1$save("rCharts1.html", standalone=TRUE)
 
 DOT_SIZE = 5
-HOVER_COLUMNS =c("Miejsce", "Gospodarz", "Gosc", "Wynik", "Typ")
+HOVER_COLUMNS = c("Miejsce", "Gospodarz", "Gosc", "Wynik", "Typ", "Pozycja", "Data")
 
 trenerzy_lista = unique(trenerzy$Trener)
 trenerzy_kolory = primary.colors(11)
 
 p = figure(width = 1100, height = 600 )%>%
   ly_rect(xleft = Poczatek, xright = Koniec, ybottom = -200, ytop = 200, color = Trener,
-          data = trenerzy, alpha = 0.3) %>%
-  ly_points(Data, pozycja_graph, data = filter(mecze_final, Typ == "Towarzyski"), color = Rezultat, size = 3,
+          data = trenerzy, alpha = 0.4) %>%
+  ly_points(Data_graph, pozycja_graph, data = filter(mecze_final, Typ == "Towarzyski"), color = Rezultat, size = 3,
             hover = HOVER_COLUMNS) %>%
-  ly_points(Data, pozycja_graph, data = filter(mecze_final, stri_detect_fixed(Typ, "Eliminacje")), color = Rezultat, size = 5,
+  ly_points(Data_graph, pozycja_graph, data = filter(mecze_final, stri_detect_fixed(Typ, "Eliminacje")), color = Rezultat, size = 5,
             hover = HOVER_COLUMNS) %>%
-  ly_points(Data, pozycja_graph, data = filter(mecze_final, stri_detect_fixed(Typ, "Mistrzostwa")), color = Rezultat, size = 6.5,
+  ly_points(Data_graph, pozycja_graph, data = filter(mecze_final, stri_detect_fixed(Typ, "Mistrzostwa")), color = Rezultat, size = 6.75,
             hover = HOVER_COLUMNS) %>%
   ly_lines(date_formated, pozycja, data = dane) %>%
   set_palette(discrete_color = pal_color(c("red", "yellow", "green", trenerzy_kolory))) %>%
   y_range(c(100,1)) %>%
-  x_range(c(min(mecze_final$Data), max(mecze_final$Data) + 200000000)) %>%
+  x_range(c(min(mecze_final$Data_graph), max(mecze_final$Data_graph) + 200000000)) %>%
   x_axis(label = "") %>%
-  y_axis(label = "Pozycja Polski w rankingu FIFA")
+  y_axis(label = "Pozycja Polski w rankingu FIFA") %>%
+  theme_grid(grid_line_alpha = 0) %>%
+  tool_crosshair()
 
 p
+
+
 
 # for(i in 1:14){
 #   p <- p %>%
